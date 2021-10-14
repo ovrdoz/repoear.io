@@ -1,0 +1,11 @@
+host: localhost
+port: 8000
+#time in seconds
+refresh_interval: 30
+repositories:
+  - name: release
+    auto_sync: false
+    url: git@github.com:ovrdoz/release.git
+    script: |
+      #!/bin/bash
+      echo "hello i'm repoear.io"
