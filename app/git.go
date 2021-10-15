@@ -43,7 +43,11 @@ func CheckRepo(urlrepo string, autosync bool, script string) {
 }
 
 func tempRepoDir(repoURL string) string {
-	return path.Join(os.TempDir(), url.PathEscape(repoURL))
+	repoear_dir := os.Getenv("REPOEAR_DIR")
+	if repoear_dir == "" {
+		repoear_dir = "/repoear_dir/"
+	}
+	return path.Join(repoear_dir, url.PathEscape(repoURL))
 }
 
 func update() error {
@@ -82,7 +86,7 @@ func clone() error {
 	fmt.Println("Retrive local path repositories")
 	if _, statErr := os.Stat(repo.dir); os.IsNotExist(statErr) {
 		fmt.Printf("Cloning repo %q ...\n", repo.urlrepo)
-		gitRepo, err = git.PlainCloneContext(context.TODO(), repo.dir, true /* isBare */, &git.CloneOptions{
+		gitRepo, err = git.PlainCloneContext(context.TODO(), repo.dir, false /* isBare */, &git.CloneOptions{
 			URL:      repo.urlrepo,
 			Auth:     repo.authKey,
 			Progress: os.Stdout,

@@ -1,8 +1,6 @@
 package model
 
 type Config struct {
-	Host            string         `yaml:"host"`
-	Port            string         `yaml:"port"`
 	RefreshInterval int            `yaml:"refresh_interval"`
 	Repositories    []Repositories `yaml:"repositories"`
 }

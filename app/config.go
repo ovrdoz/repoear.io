@@ -11,7 +11,7 @@ import (
 
 func LoadConfiguration() (model.Config, error) {
 
-	f, err := os.Open("config.yml")
+	f, err := os.Open("config/config.yml")
 	if err != nil {
 		return model.Config{}, fmt.Errorf("os.Open() failed with %s", err)
 	}
@@ -30,12 +30,6 @@ func LoadConfiguration() (model.Config, error) {
 
 func validator(config model.Config) (model.Config, error) {
 
-	if config.Host == "" {
-		return model.Config{}, fmt.Errorf("the server host is riquired")
-	}
-	if config.Port == "" {
-		return model.Config{}, fmt.Errorf("the server port is riquired")
-	}
 	if config.RefreshInterval < 30 {
 		return model.Config{}, fmt.Errorf("refresh_interval is mandatory, and cannot be less than 30 seconds")
 	}

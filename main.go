@@ -26,12 +26,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Starting application perform checks now in %v:%v\n", config.Host, config.Port)
+	fmt.Printf("Starting application perform checks\n")
 
 	go backgroundTaskSync()
 
+	httpPort := os.Getenv("REPOEAR_HOST_PORT")
+	if httpPort == "" {
+		httpPort = "8000"
+	}
 	router := initRouter()
-	router.Run(config.Host + ":" + config.Port)
+	router.Run(":" + httpPort)
 
 }
 
