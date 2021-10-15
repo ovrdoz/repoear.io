@@ -63,13 +63,13 @@ func update() error {
 }
 
 func authKey() *ssh.PublicKeys {
-	var publicKey *ssh.PublicKeys
-	//sshPath := os.Getenv("HOME") + "/Users/maia/.ssh/github_rsa"
-	//sshKey, _ := ioutil.ReadFile(sshPath)
+
 	if os.Getenv("GIT_SSH_PRIVATE_KEY") == "" {
 		fmt.Println("Could find the secret GIT_SSH_PRIVATE_KEY")
 		os.Exit(1)
 	}
+
+	var publicKey *ssh.PublicKeys
 	sshKey := os.Getenv("GIT_SSH_PRIVATE_KEY")
 	publicKey, err := ssh.NewPublicKeys("git", []byte(sshKey), "")
 	if err != nil {

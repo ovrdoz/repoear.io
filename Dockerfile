@@ -47,13 +47,22 @@ RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$kubectl
     chmod +x kubectl && \
     mv kubectl /usr/local/bin/
 
-# Install Helm
+# Install Helm 3
 ARG helm_version=v3.6.3
 LABEL helm_version=$helm_version
 RUN curl -LO "https://get.helm.sh/helm-$helm_version-linux-amd64.tar.gz" && \
     mkdir -p "/usr/local/helm-$helm_version" && \
     tar -xzf "helm-$helm_version-linux-amd64.tar.gz" -C "/usr/local/helm-$helm_version" && \
-    ln -s "/usr/local/helm-$helm_version/linux-amd64/helm" /usr/local/bin/helm && \
+    ln -s "/usr/local/helm-$helm_version/linux-amd64/helm" /usr/local/bin/helm3 && \
+    rm -f "helm-$helm_version-linux-amd64.tar.gz"
+
+# Install Helm 2
+ARG helm_version=v2.17.0
+LABEL helm_version=$helm_version
+RUN curl -LO "https://get.helm.sh/helm-$helm_version-linux-amd64.tar.gz" && \
+    mkdir -p "/usr/local/helm-$helm_version" && \
+    tar -xzf "helm-$helm_version-linux-amd64.tar.gz" -C "/usr/local/helm-$helm_version" && \
+    ln -s "/usr/local/helm-$helm_version/linux-amd64/helm" /usr/local/bin/helm2 && \
     rm -f "helm-$helm_version-linux-amd64.tar.gz"
 
 RUN mkdir -p ~/.ssh && touch ~/.ssh/known_hosts
@@ -61,6 +70,10 @@ RUN ssh-keyscan www.gitlab.com >> ~/.ssh/known_hosts
 RUN ssh-keyscan www.github.com >> ~/.ssh/known_hosts
 RUN ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
 RUN ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+
+RUN echo "alias helm=helm3" >> ~/.bashrc
+RUN echo "alias HELM_VERSION='f(){ alias helm=helm\$@; }; f'" >> ~/.bashrc
 
 WORKDIR /
 
