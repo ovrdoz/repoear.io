@@ -26,10 +26,11 @@ Uma vez rodando no kubernetes seu pod irá usar este arquivo encodado em um base
 
 ```sh
 #time in seconds
-refresh_interval: 30
+refresh: 30
 repositories:
   - name: release
-    auto_sync: false
+    sync: false
+    override: false
     url: git@github.com:ovrdoz/release.git
     script: |
       #!/bin/bash
@@ -53,11 +54,11 @@ echo hello
 
 para realizar o build da imagem utilize sempre o camando
 ```sh
-docker build -t ovrdoz/repoear:v1.0.0 .
+docker build -t ovrdoz/repoear:v1.0.2 .
 ```
 Para testar sua imagem execute passando o local da sua chave privada
 ```sh
-docker run -e GIT_SSH_PRIVATE_KEY=${GIT_SSH_PRIVATE_KEY} -p 8000:8000  ovrdoz/repoear:v1.0.0
+docker run -v $(pwd)/config:/config -e GIT_SSH_PRIVATE_KEY=${GIT_SSH_PRIVATE_KEY}  -p 8000:8000  ovrdoz/repoear:v1.0.2
 ```
 Caso queira saber o que esta executando dentro container use p docker exec abaixo
 ```sh

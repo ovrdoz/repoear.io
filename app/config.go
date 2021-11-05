@@ -30,7 +30,7 @@ func LoadConfiguration() (model.Config, error) {
 
 func validator(config model.Config) (model.Config, error) {
 
-	if config.RefreshInterval < 30 {
+	if config.Refresh < 30 {
 		return model.Config{}, fmt.Errorf("refresh_interval is mandatory, and cannot be less than 30 seconds")
 	}
 	if len(config.Repositories) > 0 {

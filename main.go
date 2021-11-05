@@ -26,7 +26,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Starting application perform checks\n")
+	//fmt.Printf("Starting application perform checks\n")
 
 	go backgroundTaskSync()
 
@@ -61,16 +61,16 @@ func initRouter() *gin.Engine {
 func backgroundTaskForceSync() {
 	fmt.Println("Forcing sync, the process will run for all elements of config.yml")
 	for _, element := range config.Repositories {
-		app.CheckRepo(element.URL, true, element.Script)
+		app.CheckRepo(element.URL, true, element.Script, element.Force)
 	}
 }
 
 func backgroundTaskSync() {
-	fmt.Printf("Running process in backgroud looking for repository changes, configured to interval %v seconds\n", config.RefreshInterval)
-	ticker := time.NewTicker(time.Duration(config.RefreshInterval) * time.Second)
+	fmt.Printf("Running process in backgroud looking for repository changes, configured to interval %v seconds\n", config.Refresh)
+	ticker := time.NewTicker(time.Duration(config.Refresh) * time.Second)
 	for _ = range ticker.C {
 		for _, element := range config.Repositories {
-			app.CheckRepo(element.URL, element.AutoSync, element.Script)
+			app.CheckRepo(element.URL, element.Sync, element.Script, element.Force)
 		}
 	}
 }

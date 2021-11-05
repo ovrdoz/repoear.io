@@ -14,9 +14,10 @@ import (
 )
 
 type Repository struct {
-	urlrepo string
+	url     string
 	dir     string
 	sync    bool
+	force   bool
 	script  string
 	authKey *ssh.PublicKeys
 	repo    *git.Repository
@@ -24,22 +25,24 @@ type Repository struct {
 
 var repo Repository
 
-func CheckRepo(urlrepo string, autosync bool, script string) {
+func CheckRepo(urlRepo string, autoSync bool, script string, forceRepo bool) {
 	repo = Repository{
-		urlrepo: urlrepo,
-		dir:     tempRepoDir(urlrepo),
+		url:     urlRepo,
+		dir:     tempRepoDir(urlRepo),
 		authKey: authKey(),
-		sync:    autosync,
+		force:   forceRepo,
+		sync:    autoSync,
 		script:  script,
 	}
 	if repo.sync {
-		fmt.Printf("Check repo updates for %v\n", urlrepo)
-		if err := update(); err != nil {
+		//fmt.Printf("Check repo updates for %v\n", urlRepo)
+		if err := update(repo.force); err != nil {
 			fmt.Printf("Unable to update repo: %v\n", err)
 		}
 	} else {
 		fmt.Println("Autosync has been skipped, because the flag is set to false in the configuration")
 	}
+
 }
 
 func tempRepoDir(repoURL string) string {
@@ -50,13 +53,13 @@ func tempRepoDir(repoURL string) string {
 	return path.Join(repoear_dir, url.PathEscape(repoURL))
 }
 
-func update() error {
+func update(force bool) error {
 
 	if err := clone(); err != nil {
 		return fmt.Errorf("could not clone %q into %q: %v\n", repo.repo, repo.dir, err)
 	}
 
-	if err := pull(); err != nil {
+	if err := pull(force); err != nil {
 		return fmt.Errorf("could not pull %v\n", err)
 	}
 	return nil
@@ -83,18 +86,17 @@ func clone() error {
 
 	var gitRepo *git.Repository
 	var err error
-	fmt.Println("Retrive local path repositories")
 	if _, statErr := os.Stat(repo.dir); os.IsNotExist(statErr) {
-		fmt.Printf("Cloning repo %q ...\n", repo.urlrepo)
+		//fmt.Printf("Cloning repo %q ...\n", repo.url)
 		gitRepo, err = git.PlainCloneContext(context.TODO(), repo.dir, false /* isBare */, &git.CloneOptions{
-			URL:      repo.urlrepo,
-			Auth:     repo.authKey,
-			Progress: os.Stdout,
+			URL:  repo.url,
+			Auth: repo.authKey,
+			//Progress: os.Stdout,
 		})
 		if err != nil {
 			return fmt.Errorf("Failed to clone: %v\n", err)
 		}
-		fmt.Printf("Successfully cloned %q to %q\n", repo.urlrepo, repo.dir)
+		//fmt.Printf("Successfully cloned %q to %q\n", repo.url, repo.dir)
 	} else {
 		gitRepo, err = git.PlainOpen(repo.dir)
 		if err != nil {
@@ -107,7 +109,7 @@ func clone() error {
 	return nil
 }
 
-func pull() error {
+func pull(force bool) error {
 
 	w, err := repo.repo.Worktree()
 	if err != nil {
@@ -116,22 +118,28 @@ func pull() error {
 	callback := w.Pull(&git.PullOptions{
 		Auth:       repo.authKey,
 		RemoteName: "origin",
-		Progress:   os.Stdout,
+		//Progress:   os.Stdout,
+		Force: true,
 	})
 	if callback != nil && callback != git.NoErrAlreadyUpToDate {
 		return fmt.Errorf("Failed to pull ref %v\n", callback)
 	}
 	if callback != nil && callback == git.NoErrAlreadyUpToDate {
 		fmt.Printf("Everything is ok, nothing to do %v\n", callback)
+		if force {
+			fmt.Printf("Force to execute script and wait for the output\n")
+			executeScript(repo.script)
+		}
 		return nil
 	}
+
+	fmt.Printf("Executing the script and wait for the output\n")
 	executeScript(repo.script)
 
 	return nil
 }
 
 func executeScript(script string) error {
-
 	filetmp := []byte(script)
 	err := os.WriteFile("/tmp/script", filetmp, 0644)
 	if err != nil {
@@ -148,7 +156,7 @@ func executeScript(script string) error {
 		return fmt.Errorf("Failed to execute script %v\n", err)
 	}
 
-	fmt.Printf("Script executed with output %v\n", out.String())
+	fmt.Printf("Script executed with output: \n\n%v\n", out.String())
 	return nil
 
 }

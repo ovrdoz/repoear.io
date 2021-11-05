@@ -1,8 +1,9 @@
 #time in seconds
-refresh_interval: 30
+refresh: 30
 repositories:
   - name: release
-    auto_sync: false
+    sync: true
+    force: true
     url: git@github.com:ovrdoz/release.git
     script: |
       #!/bin/bash
